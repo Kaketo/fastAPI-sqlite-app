@@ -69,3 +69,10 @@ def test_sales():
         assert response.status_code == 404
         assert response.json() == {"detail": {"error": "Wrong category name."}}
 
+def test_put_customer():
+    with TestClient(app) as client:
+        response = client.put(f"/customers/{1}", json = {"company": "TEST"})
+        assert response.status_code == 200
+        assert response.json()["CustomerId"] == 1
+        assert response.json()["Company"] == "TEST"
+

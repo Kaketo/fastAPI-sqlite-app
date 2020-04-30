@@ -129,4 +129,3 @@ dmypy.json
 .pyre/
 
 fastAPI-sqlite-app/
-chinook.db

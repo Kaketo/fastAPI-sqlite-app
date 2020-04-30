@@ -61,6 +61,36 @@ async def get_album(album_id: int):
     album = await cursor.fetchone()
     return album
 
+class Customer(BaseModel):
+    company: str = None
+    address: str = None
+    city: str = None
+    state: str = None
+    country: str = None
+    postalcode: str = None
+    fax: str = None
+
+@app.put("/customers/{customer_id}")
+async def put_customer(response: Response, customer_id: int, customer: Customer):
+    cursor = await app.db_connection.execute("SELECT CustomerId FROM customers WHERE CustomerId = :customer_id",
+        {"customer_id": customer_id})
+    result = await cursor.fetchone()
+    if result is None:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return {"detail": {"error": "Customer with that id does not exist."}}
+
+    customer = {k: v for k, v in customer.dict().items() if v is not None}
+    for key, value in customer.items():
+        cursor = await app.db_connection.execute("UPDATE customers SET " + f"{key}" +" = :value WHERE CustomerId = :customer_id",
+        {"customer_id": customer_id, "value": value})
+        await app.db_connection.commit()
+
+    app.db_connection.row_factory = aiosqlite.Row
+    cursor = await app.db_connection.execute("SELECT * FROM customers WHERE CustomerId = :customer_id",
+        {"customer_id": customer_id})
+    customer = await cursor.fetchone()
+    return customer
+
 @app.get("/sales")
 async def get_sales_statistics(response: Response, category: str):
     if category == "customers":
